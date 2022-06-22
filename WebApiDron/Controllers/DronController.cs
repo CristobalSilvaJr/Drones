@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -32,6 +33,7 @@ namespace WebApiDron.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<DronModels>> GetDronModels(int id)
         {
+
             var dronModels = await _context.DronModels.FindAsync(id);
 
             if (dronModels == null)
@@ -74,12 +76,19 @@ namespace WebApiDron.Controllers
             return NoContent();
         }
 
+        /// <summary>
+        ///El peso limite del dron no puede ser mayor a 500.
+        ///El numero de serie no puede ser mayor a 100 caracteres.
+        ///El estado solo debe contener caracteres en mayusculas .
+        /// </summary>
+        /// <returns></returns>
         // POST: api/Dron
         // To protect from overposting attacks, enable the specific properties you want to bind to, for
         // more details, see https://go.microsoft.com/fwlink/?linkid=2123754.
         [HttpPost]
         public async Task<ActionResult<DronModels>> PostDronModels(DronModels dronModels)
         {
+            Regex regexEstado = new Regex("^[A-Z- ]+$");
             if (dronModels.PesoLimite > 500)
             {
                 return NotFound("EL peso limite no puede ser mayor a 500.");
@@ -88,13 +97,20 @@ namespace WebApiDron.Controllers
             {
                 return NotFound("El numero de serie no puede ser mayor a 100 caracteres.");
             }
+             if (regexEstado.IsMatch(dronModels.Estado))
+            {
+                return Ok("Correcto");
+            }
+            else
+            {
+                return NotFound("El estado solo debe contener caracteres en mayusculas .");
+            }
             //else if (dronModels.NumeroSerie == )
             //{
             //    return NotFound("El numero de serie ya existe.");
             //}
             //TODO: Falta validar el numero de serie, si existe en la BD o no.
 
-            _context.DronModels.Add(dronModels);
             await _context.SaveChangesAsync();
 
             return CreatedAtAction("GetDronModels", new { id = dronModels.NumeroSerie }, dronModels);

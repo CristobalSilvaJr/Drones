@@ -14,7 +14,7 @@ namespace WebApiDron.Models
         public string Modelo { get; set; }
         public int PesoLimite { get; set; }
         //TODO:Capacidad de la bateria: Este seria la carga del dron.
-        public double CapacidadBateria { get; set; }
+        public decimal CapacidadBateria { get; set; }
         public string Estado { get; set; }
 
     }

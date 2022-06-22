@@ -17,5 +17,7 @@ namespace WebApiDron.Data
         public DbSet<WebApiDron.Models.MedicamentoModels> MedicamentoModels { get; set; }
 
         public DbSet<WebApiDron.Models.DronModels> DronModels { get; set; }
+
+        public DbSet<WebApiDron.Models.DronMedicamento> DronMedicamento { get; set; }
     }
 }

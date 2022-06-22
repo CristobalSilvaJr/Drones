@@ -13,11 +13,11 @@ namespace WebApiDron.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class MedicamentoModelsController : ControllerBase
+    public class MedicamentoController : ControllerBase
     {
         private readonly WebApiDronContext _context;
 
-        public MedicamentoModelsController(WebApiDronContext context)
+        public MedicamentoController(WebApiDronContext context)
         {
             _context = context;
         }
@@ -47,9 +47,9 @@ namespace WebApiDron.Controllers
         // To protect from overposting attacks, enable the specific properties you want to bind to, for
         // more details, see https://go.microsoft.com/fwlink/?linkid=2123754.
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutMedicamentoModels(int id, MedicamentoModels medicamentoModels)
+        public async Task<IActionResult> PutMedicamentoModels(string id, MedicamentoModels medicamentoModels)
         {
-            if (id != medicamentoModels.Id)
+            if (id != medicamentoModels.Codigo)
             {
                 return BadRequest();
             }
@@ -75,39 +75,45 @@ namespace WebApiDron.Controllers
             return NoContent();
         }
 
+
+        /// <summary>
+        ///El nombre solo puede contener letras, numeros, guion y guion bajo.
+        ///El codigo solo puede contener Mayusculas, numeros y guion bajo..
+        /// </summary>
+        /// <returns></returns>
         // POST: api/MedicamentoModels
         // To protect from overposting attacks, enable the specific properties you want to bind to, for
         // more details, see https://go.microsoft.com/fwlink/?linkid=2123754.
         [HttpPost]
         public async Task<ActionResult<MedicamentoModels>> PostMedicamentoModels(MedicamentoModels medicamentoModels)
         {
+            //Uso de expresiones regulares.
             Regex regexNombre= new Regex("^[a-zA-Z0-9_-]+$");
             Regex regexCodigo = new Regex("^[A-Z0-9_]+$");
             //string respuesta= medicamentoModels.Nombre.Substring(0);
             if (regexNombre.IsMatch(medicamentoModels.Nombre)) 
             {
-                  Console.WriteLine("Correcto");
+                   Ok("Correcto");
             }
             else
             {
                 return NotFound("El nombre solo puede contener letras, numeros, guion y guion bajo");
-                //Terminamos la aplicacion
+                //Se envia mensaje de error
             }
             if (regexCodigo.IsMatch(medicamentoModels.Codigo))
             {
-                Console.WriteLine("Correcto");
+                 Ok("Correcto");
             }
             else
             {
                 return NotFound("El codigo solo puede contener Mayusculas, numeros y guion bajo.");
-                //Terminamos la aplicacion
             }
 
             //Comienzo para añadir a la tabla "medicamentoModels".
             _context.MedicamentoModels.Add(medicamentoModels);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetMedicamentoModels", new { id = medicamentoModels.Id }, medicamentoModels);
+            return CreatedAtAction("GetMedicamentoModels", new { id = medicamentoModels.Codigo }, medicamentoModels);
         }
 
         // DELETE: api/MedicamentoModels/5
@@ -125,10 +131,9 @@ namespace WebApiDron.Controllers
 
             return medicamentoModels;
         }
-
-        private bool MedicamentoModelsExists(int id)
+        private bool MedicamentoModelsExists(string id)
         {
-            return _context.MedicamentoModels.Any(e => e.Id == id);
+            return _context.MedicamentoModels.Any(e => e.Codigo == id);
         }
     }
 }

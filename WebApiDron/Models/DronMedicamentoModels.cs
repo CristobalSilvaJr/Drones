@@ -6,12 +6,11 @@ using System.Threading.Tasks;
 
 namespace WebApiDron.Models
 {
-    public class MedicamentoModels
+    public class DronMedicamento
     {
+        public int Id { get; set; }
+        public string CodigoMedicamento { get; set; }
         [Key]
-        public string Codigo { get; set; }
-        public string Nombre { get; set; }
-        public int Peso { get; set; }
-        public string Imagen { get; set; }
+        public string CodigoDron { get; set; }
     }
 }

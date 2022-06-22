@@ -14,6 +14,7 @@ namespace WebApiDron.Controllers
     [ApiController]
     public class DronMedicamentoController : ControllerBase
     {
+
         private readonly WebApiDronContext _context;
 
         public DronMedicamentoController(WebApiDronContext context)
@@ -36,21 +37,36 @@ namespace WebApiDron.Controllers
         [HttpGet("{codigoDron}")]
         public async Task<ActionResult<DronMedicamento>> GetDronMedicamento(string codigoDron)
         {
-            List<DronModels>  dronModels = await _context.DronModels.ToListAsync();
+            List<DronModels> dronModels = await _context.DronModels.ToListAsync();
+            List<MedicamentoModels> medicamentoModels = await _context.MedicamentoModels.ToListAsync();
+            List<DronMedicamento> dronMedicamentos = await _context.DronMedicamento.ToListAsync();
 
             var DronMedicamento = await _context.DronMedicamento.FindAsync(codigoDron);
-
             if (DronMedicamento == null)
             {
                 return NotFound();
             }
-            foreach (var item in dronModels)
+            foreach (var dronMedicamento in dronMedicamentos)
             {
-                if (codigoDron == item.NumeroSerie)
+                if (dronMedicamento.CodigoDron == codigoDron)
                 {
-                    //TODO:Falta implementar logica nivel bateria, peso, drones disponibles 
+                    foreach (var medicamento in medicamentoModels.Where(c => c.Codigo == dronMedicamento.CodigoMedicamento))
+                    {
+                        if (medicamento.Codigo == dronMedicamento.CodigoMedicamento && dronMedicamento.CodigoDron == codigoDron)
+                        {
+                            foreach (var dron in dronModels.Where(c => c.NumeroSerie == codigoDron))
+                            {
+                                DronModels listaDronModels = new DronModels();
+                                var peso = medicamento.Peso;
+                                var bateria = (dron.CapacidadBateria / 100) * 100;
+                                var Message = $"Numero serie: {dron.NumeroSerie} \nBateria: {dron.CapacidadBateria}%\nCapacidad de peso: {dron.PesoLimite}gr\nPeso utilizado: {peso}\nNombre del medicamento: {medicamento.Nombre}\nEstado: {dron.Estado}";
+                                return Ok(Message);
+                            }
+                        }
+                    }
+               
                 }
-
+                //TODO:Falta implementar logica nivel bateria, peso, drones disponibles 
             }
 
             return DronMedicamento;
@@ -59,10 +75,12 @@ namespace WebApiDron.Controllers
         // PUT: api/DronMedicamento/5
         // To protect from overposting attacks, enable the specific properties you want to bind to, for
         // more details, see https://go.microsoft.com/fwlink/?linkid=2123754.
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutDronMedicamento(int id, DronMedicamento DronMedicamento)
+        [HttpPut("{codigoDron}")]
+        public async Task<IActionResult> PutDronMedicamento(string codigoDron, DronMedicamento DronMedicamento)
         {
-            if (id != DronMedicamento.Id)
+            List<DronModels> dronModels = await _context.DronModels.ToListAsync();
+
+            if (codigoDron != DronMedicamento.CodigoDron)
             {
                 return BadRequest();
             }
@@ -71,11 +89,24 @@ namespace WebApiDron.Controllers
 
             try
             {
-                await _context.SaveChangesAsync();
+                if (DronMedicamento.CodigoDron == codigoDron)
+                {
+                    foreach (var dron in dronModels.Where(c => c.NumeroSerie == codigoDron))
+                    {
+                        if (Math.Round(dron.CapacidadBateria) <= 25)
+                        {
+                            return NotFound($"El dron no esta operativo, ya que su nivel de bateria es muy bajo: {Math.Round(dron.CapacidadBateria)}");
+                        }
+                        else
+                        {
+                            await _context.SaveChangesAsync();
+                        }
+                    }
+                }
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!DronMedicamentoExists(id))
+                if (!DronMedicamentoExists(DronMedicamento.Id))
                 {
                     return NotFound();
                 }

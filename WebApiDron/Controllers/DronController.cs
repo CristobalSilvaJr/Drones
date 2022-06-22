@@ -93,32 +93,26 @@ namespace WebApiDron.Controllers
             {
                 return NotFound("EL peso limite no puede ser mayor a 500.");
             }
-            else if (dronModels.NumeroSerie.Length > 100)
+           
+            if (dronModels.NumeroSerie.Length > 100)
             {
                 return NotFound("El numero de serie no puede ser mayor a 100 caracteres.");
             }
-             if (regexEstado.IsMatch(dronModels.Estado))
+            if (!regexEstado.IsMatch(dronModels.Estado))
             {
-                return Ok("Correcto");
+                return NotFound("El estado solo debe contener caracteres en mayusculas.");
             }
-            else
-            {
-                return NotFound("El estado solo debe contener caracteres en mayusculas .");
-            }
-            //else if (dronModels.NumeroSerie == )
-            //{
-            //    return NotFound("El numero de serie ya existe.");
-            //}
-            //TODO: Falta validar el numero de serie, si existe en la BD o no.
 
+            _context.DronModels.Add(dronModels);
             await _context.SaveChangesAsync();
 
             return CreatedAtAction("GetDronModels", new { id = dronModels.NumeroSerie }, dronModels);
+
         }
 
         // DELETE: api/Dron/5
         [HttpDelete("{id}")]
-        public async Task<ActionResult<DronModels>> DeleteDronModels(int id)
+        public async Task<ActionResult<DronModels>> DeleteDronModels(string id)
         {
             var dronModels = await _context.DronModels.FindAsync(id);
             if (dronModels == null)
